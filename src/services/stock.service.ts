@@ -9,15 +9,15 @@ export type StockPayload = {
 
 export const getStockMovements = async (): Promise<StockMovement[]> => {
   const response = await api.get("/stock/movements");
-  return response.data;
+  return response.data.data;
 };
 
 export const addStockEntry = async (payload: StockPayload) => {
   const response = await api.post("/stock/entry", payload);
-  return response.data;
+  return response.data.data;
 };
 
 export const addStockOut = async (payload: StockPayload) => {
   const response = await api.post("/stock/out", payload);
-  return response.data;
+  return response.data.data;
 };
