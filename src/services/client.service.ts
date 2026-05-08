@@ -8,27 +8,27 @@ export type ClientPayload = {
 
 export const getClients = async (): Promise<Client[]> => {
   const response = await api.get("/clients");
-  return response.data;
+  // console.log(response.data.data);
+  return response.data.data;
 };
 
 export const getClientById = async (id: number) => {
   const response = await api.get(`/clients/${id}`);
-  return response.data;
+  return response.data.data;
+
 };
 
-export const createClient = async (
-  payload: ClientPayload
-): Promise<Client> => {
+export const createClient = async (payload: ClientPayload): Promise<Client> => {
   const response = await api.post("/clients", payload);
-  return response.data.client;
+  return response.data.data.client;
 };
 
 export const updateClient = async (
   id: number,
-  payload: ClientPayload
+  payload: ClientPayload,
 ): Promise<Client> => {
   const response = await api.put(`/clients/${id}`, payload);
-  return response.data.client;
+  return response.data.data.client;
 };
 
 export const deleteClient = async (id: number): Promise<void> => {
