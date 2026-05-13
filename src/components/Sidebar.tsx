@@ -8,17 +8,20 @@ import {
   X,
   ChevronRight,
   Users,
+  Truck,
+  Wallet,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.jpg";
 
 const links = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
+  { name: "Caisse", path: "/cash", icon: Wallet },
   { name: "Produits", path: "/products", icon: Package },
   { name: "Clients", path: "/clients", icon: Users },
   { name: "Stock", path: "/stock", icon: Boxes },
   { name: "Ventes", path: "/sales", icon: ShoppingCart },
-  
+  { name: "Fournisseurs", path: "/suppliers", icon: Truck },
 ];
 
 type SidebarContentProps = {

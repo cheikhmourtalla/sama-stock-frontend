@@ -10,7 +10,8 @@ import Products from "./pages/Products";
 import Stock from "./pages/Stock";
 import Sales from "./pages/Sales";
 import Clients from "./pages/Clients";
-
+import Suppliers from "./pages/Suppliers";
+import CashDesk from "./pages/CashDesk";
 
 
 
@@ -44,6 +45,8 @@ export default function App() {
           <Route path="/clients" element={<Clients />} />
           <Route path="/stock" element={<Stock />} />
           <Route path="/sales" element={<Sales />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/cash" element={<CashDesk />} />
         
         </Route>
       </Routes>

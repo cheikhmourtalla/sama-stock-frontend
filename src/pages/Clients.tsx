@@ -1,6 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
+  Search,
+  Phone,
+  User,
+  CreditCard,
+  History,
+  ChevronRight,
+  Trash2,
+  Edit,
+  X,
+  UserPlus,
+  TrendingUp,
+  Users,
+  AlertTriangle,
+  Wallet,
+} from "lucide-react";
+
+import {
   createClient,
   deleteClient,
   getClientById,
@@ -8,7 +25,9 @@ import {
   updateClient,
   type ClientPayload,
 } from "../services/client.service";
+
 import { addSalePayment } from "../services/sale.service";
+
 import type { Client } from "../types/client";
 import { isAdmin } from "../utils/auth";
 
@@ -27,13 +46,6 @@ type ClientSale = {
   };
 };
 
-type ClientDetails = Client & {
-  sales: ClientSale[];
-  totalPurchases: number;
-  totalPaid: number;
-  totalRemaining: number;
-};
-
 const initialForm: ClientPayload = {
   name: "",
   phone: "",
@@ -44,726 +56,707 @@ export default function Clients() {
 
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [editingClientId, setEditingClientId] = useState<number | null>(null);
-  const [form, setForm] = useState<ClientPayload>(initialForm);
+
   const [search, setSearch] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [selectedClient, setSelectedClient] = useState<ClientDetails | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [detailsLoadingId, setDetailsLoadingId] = useState<number | null>(null);
+  const [showPaymentModal, setShowPaymentModal] =
+    useState(false);
 
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedSale, setSelectedSale] = useState<ClientSale | null>(null);
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [selectedSale, setSelectedSale] =
+    useState<ClientSale | null>(null);
 
-  const fetchClients = async () => {
+  const [paymentAmount, setPaymentAmount] =
+    useState("");
+
+  const [paymentSubmitting, setPaymentSubmitting] =
+    useState(false);
+
+  const [selectedClient, setSelectedClient] =
+    useState<any>(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [editId, setEditId] = useState<number | null>(
+    null
+  );
+
+  const [formData, setFormData] =
+    useState<ClientPayload>(initialForm);
+
+  const fetchData = async () => {
     try {
       setLoading(true);
+
       const data = await getClients();
+
       setClients(data);
     } catch (error) {
-      console.error("Erreur clients", error);
-      toast.error("Erreur lors du chargement des clients");
+      toast.error("Erreur de chargement");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchClients();
+    fetchData();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const stats = useMemo(() => {
+    const debtClients = clients.filter(
+      (c: any) => (c.totalRemaining || 0) > 0
+    ).length;
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const resetForm = () => {
-    setForm(initialForm);
-    setEditingClientId(null);
-    setErrorMessage("");
-  };
-
-  const handleOpenCreate = () => {
-    resetForm();
-    setShowForm(true);
-  };
-
-  const handleEdit = (client: Client) => {
-    setForm({
-      name: client.name,
-      phone: client.phone,
-    });
-    setEditingClientId(client.id);
-    setErrorMessage("");
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    const confirmDelete = window.confirm(
-      "Voulez-vous vraiment supprimer ce client ?"
+    const totalDebt = clients.reduce(
+      (acc: number, c: any) =>
+        acc + (c.totalRemaining || 0),
+      0
     );
 
-    if (!confirmDelete) return;
+    return {
+      total: clients.length,
+      debtClients,
+      totalDebt,
+    };
+  }, [clients]);
 
-    try {
-      await deleteClient(id);
-      toast.success("Client supprimé avec succès");
-      await fetchClients();
-    } catch (error: any) {
-      console.error("Erreur suppression client", error);
-      toast.error(
-        error?.response?.data?.message ||
-          "Erreur lors de la suppression du client"
-      );
-    }
-  };
+  const filteredClients = useMemo(() => {
+    return clients.filter(
+      (c) =>
+        c.name
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        c.phone.includes(search)
+    );
+  }, [clients, search]);
 
-  const handleViewDetails = async (id: number) => {
+  const handleSelectClient = async (
+    id: number
+  ) => {
     try {
-      setDetailsLoadingId(id);
-      const data = await getClientById(id);
-      setSelectedClient(data);
-      setShowDetailsModal(true);
+      const details = await getClientById(id);
+
+      setSelectedClient(details);
     } catch (error) {
-      console.error("Erreur détails client", error);
-      toast.error("Impossible de charger les détails du client");
-    } finally {
-      setDetailsLoadingId(null);
+      toast.error("Erreur détails client");
     }
-  };
-
-  const closeDetailsModal = () => {
-    setShowDetailsModal(false);
-    setSelectedClient(null);
   };
 
   const openPaymentModal = (sale: ClientSale) => {
     setSelectedSale(sale);
-    setPaymentAmount("");
-    setPaymentModalOpen(true);
-  };
 
-  const closePaymentModal = () => {
-    setSelectedSale(null);
-    setPaymentAmount("");
-    setPaymentModalOpen(false);
+    setPaymentAmount(sale.remaining.toString());
+
+    setShowPaymentModal(true);
   };
 
   const handleAddPayment = async () => {
+    if (
+      !selectedSale ||
+      !paymentAmount ||
+      Number(paymentAmount) <= 0
+    )
+      return;
+
+    setPaymentSubmitting(true);
+
     try {
-      if (!selectedSale) return;
+      await addSalePayment(
+        selectedSale.id,
+        Number(paymentAmount)
+      );
 
-      const amount = Number(paymentAmount);
+      toast.success("Versement enregistré");
 
-      if (!amount || amount <= 0) {
-        toast.error("Veuillez saisir un montant valide");
-        return;
-      }
+      setShowPaymentModal(false);
 
-      setPaymentSubmitting(true);
+      if (selectedClient)
+        handleSelectClient(selectedClient.id);
 
-      await addSalePayment(selectedSale.id, amount);
-
-      toast.success("Paiement ajouté avec succès");
-
-      if (selectedClient) {
-        const refreshedClient = await getClientById(selectedClient.id);
-        setSelectedClient(refreshedClient);
-      }
-
-      await fetchClients();
-
-      closePaymentModal();
+      fetchData();
     } catch (error: any) {
-      console.error("Erreur ajout paiement", error);
       toast.error(
-        error?.response?.data?.message ||
-          "Impossible d'ajouter le paiement"
+        error.response?.data?.message ||
+          "Erreur lors du versement"
       );
     } finally {
       setPaymentSubmitting(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleOpenCreate = () => {
+    setFormData(initialForm);
+
+    setIsEditing(false);
+
+    setEditId(null);
+
+    setErrorMessage("");
+
+    setShowForm(true);
+  };
+
+  const handleOpenEdit = (
+    e: React.MouseEvent,
+    client: Client
+  ) => {
+    e.stopPropagation();
+
+    setFormData({
+      name: client.name,
+      phone: client.phone,
+    });
+
+    setIsEditing(true);
+
+    setEditId(client.id);
+
+    setErrorMessage("");
+
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
+
     setSubmitting(true);
+
     setErrorMessage("");
 
     try {
-      if (editingClientId !== null) {
-        await updateClient(editingClientId, form);
-        toast.success("Client modifié avec succès");
+      if (isEditing && editId) {
+        await updateClient(editId, formData);
+
+        toast.success("Client mis à jour");
       } else {
-        await createClient(form);
-        toast.success("Client ajouté avec succès");
+        await createClient(formData);
+
+        toast.success("Client ajouté");
       }
 
-      resetForm();
       setShowForm(false);
-      await fetchClients();
+
+      fetchData();
     } catch (error: any) {
-      console.error("Erreur formulaire client", error);
-      setErrorMessage(
-        error?.response?.data?.message ||
-          "Impossible d'enregistrer le client."
-      );
-      toast.error("Erreur lors de l'enregistrement du client");
+      const msg =
+        error.response?.data?.message ||
+        "Erreur serveur";
+
+      setErrorMessage(msg);
+
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredClients = useMemo(() => {
-    const q = search.toLowerCase().trim();
+  const handleDelete = async (
+    e: React.MouseEvent,
+    id: number
+  ) => {
+    e.stopPropagation();
 
-    return clients.filter((client) => {
-      return (
-        client.name.toLowerCase().includes(q) ||
-        client.phone.toLowerCase().includes(q)
-      );
-    });
-  }, [clients, search]);
+    if (!window.confirm("Supprimer ce client ?"))
+      return;
 
-  const totalDebt = useMemo(() => {
-    return filteredClients.reduce(
-      (sum, client) => sum + client.totalRemaining,
-      0
-    );
-  }, [filteredClients]);
+    try {
+      await deleteClient(id);
 
-  const totalPaid = useMemo(() => {
-    return filteredClients.reduce((sum, client) => sum + client.totalPaid, 0);
-  }, [filteredClients]);
+      toast.success("Client supprimé");
 
-  const totalPurchases = useMemo(() => {
-    return filteredClients.reduce(
-      (sum, client) => sum + client.totalPurchases,
-      0
-    );
-  }, [filteredClients]);
+      if (selectedClient?.id === id)
+        setSelectedClient(null);
 
-  const formatCurrency = (value: number) =>
-    `${value.toLocaleString("fr-FR")} FCFA`;
-
-  const getDebtStatus = (client: Client) => {
-    if (client.totalRemaining > 0) {
-      return {
-        label: "Dette en cours",
-        className: "bg-red-100 text-red-700",
-      };
+      fetchData();
+    } catch (error) {
+      toast.error("Suppression impossible");
     }
-
-    if (client.totalPurchases > 0 && client.totalRemaining === 0) {
-      return {
-        label: "Soldé",
-        className: "bg-green-100 text-green-700",
-      };
-    }
-
-    return {
-      label: "Aucun achat",
-      className: "bg-slate-100 text-slate-700",
-    };
   };
 
+  const formatCurrency = (v: number) =>
+    `${v.toLocaleString()} FCFA`;
+
   return (
-    <section className="space-y-6">
-  
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-gray-500">Total achats</p>
-          <h3 className="mt-2 text-2xl font-bold text-slate-900">
-            {formatCurrency(totalPurchases)}
-          </h3>
+    <div className="max-w-[1600px] mx-auto p-4 lg:p-8 space-y-8 bg-slate-50 min-h-screen">
+
+      {/* HEADER */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        <div className="lg:col-span-2">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            Clients
+          </h1>
+
+          <p className="text-slate-500 mt-1">
+            Gestion des clients, dettes et
+            règlements.
+          </p>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-gray-500">Total payé</p>
-          <h3 className="mt-2 text-2xl font-bold text-green-700">
-            {formatCurrency(totalPaid)}
-          </h3>
+        <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center gap-4">
+
+          <div className="bg-blue-500 p-3 rounded-xl text-white">
+            <Users size={20} />
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-blue-600 uppercase">
+              Clients
+            </p>
+
+            <p className="text-xl font-black text-blue-900">
+              {stats.total}
+            </p>
+          </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-gray-500">Reste à payer</p>
-          <h3 className="mt-2 text-2xl font-bold text-red-700">
-            {formatCurrency(totalDebt)}
-          </h3>
+        <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-4">
+
+          <div className="bg-rose-500 p-3 rounded-xl text-white">
+            <Wallet size={20} />
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-rose-600 uppercase">
+              Dettes
+            </p>
+
+            <p className="text-xl font-black text-rose-900">
+              {formatCurrency(stats.totalDebt)}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h3 className="text-2xl font-bold text-slate-900">Liste des clients</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Consultez vos clients, leurs achats et leurs dettes.
-            </p>
+      {/* TOP BAR */}
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+
+          <div className="relative w-full lg:max-w-md">
+
+            <Search
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type="text"
+              placeholder="Rechercher un client..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              className="w-full bg-slate-50 border-none rounded-2xl pl-11 pr-4 py-4 outline-none focus:ring-2 focus:ring-slate-900"
+            />
           </div>
 
-          {admin && (
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              Ajouter client
-            </button>
+          <button
+            onClick={handleOpenCreate}
+            className="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-6 py-4 font-bold flex items-center justify-center gap-2 transition-all"
+          >
+            <UserPlus size={18} />
+            Nouveau Client
+          </button>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+
+        {/* CLIENTS */}
+        <div className="xl:col-span-5 space-y-4">
+
+          {loading ? (
+            <div className="bg-white rounded-3xl p-10 border border-slate-100 text-center">
+              <p className="text-slate-500">
+                Chargement...
+              </p>
+            </div>
+          ) : (
+            <>
+              {filteredClients.map((client) => (
+                <div
+                  key={client.id}
+                  onClick={() =>
+                    handleSelectClient(client.id)
+                  }
+                  className={`bg-white p-5 rounded-3xl border transition-all cursor-pointer flex items-center justify-between ${
+                    selectedClient?.id === client.id
+                      ? "border-slate-900 ring-1 ring-slate-900 shadow-md"
+                      : "border-transparent shadow-sm hover:border-slate-200"
+                  }`}
+                >
+
+                  <div className="flex items-center gap-4">
+
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-700 uppercase">
+                      {client.name.substring(0, 2)}
+                    </div>
+
+                    <div>
+                      <p className="font-black text-slate-900">
+                        {client.name}
+                      </p>
+
+                      <p className="text-sm text-slate-500 mt-1 flex items-center gap-1">
+                        <Phone size={14} />
+                        {client.phone}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+
+                    <button
+                      onClick={(e) =>
+                        handleOpenEdit(e, client)
+                      }
+                      className="p-2 text-slate-400 hover:text-blue-600"
+                    >
+                      <Edit size={18} />
+                    </button>
+
+                    {admin && (
+                      <button
+                        onClick={(e) =>
+                          handleDelete(
+                            e,
+                            client.id
+                          )
+                        }
+                        className="p-2 text-slate-400 hover:text-rose-600"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+
+                    <ChevronRight
+                      size={20}
+                      className="text-slate-300"
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {filteredClients.length === 0 && (
+                <div className="bg-white rounded-3xl p-10 border border-slate-100 text-center">
+                  <p className="text-slate-500">
+                    Aucun client trouvé.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        <div className="mt-6">
-          <input
-            type="text"
-            placeholder="Rechercher par nom ou téléphone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-slate-900"
-          />
+        {/* DETAILS */}
+        <div className="xl:col-span-7">
+
+          {selectedClient ? (
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 sticky top-8 space-y-8">
+
+              <div className="flex justify-between items-start">
+
+                <div className="p-4 bg-slate-900 rounded-2xl text-white">
+                  <User size={32} />
+                </div>
+
+                <div className="text-right">
+                  <h2 className="text-3xl font-black text-slate-900">
+                    {selectedClient.name}
+                  </h2>
+
+                  <p className="text-slate-500 font-medium mt-1">
+                    {selectedClient.phone}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+
+                <div className="bg-slate-50 p-6 rounded-3xl">
+
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                    Achats
+                  </p>
+
+                  <p className="text-2xl font-black text-slate-900 mt-2">
+                    {formatCurrency(
+                      selectedClient.totalPurchases ||
+                        0
+                    )}
+                  </p>
+                </div>
+
+                <div
+                  className={`p-6 rounded-3xl ${
+                    selectedClient.totalRemaining >
+                    0
+                      ? "bg-rose-50 text-rose-600"
+                      : "bg-emerald-50 text-emerald-600"
+                  }`}
+                >
+
+                  <p className="text-xs font-black uppercase tracking-widest opacity-60">
+                    Dette restante
+                  </p>
+
+                  <p className="text-2xl font-black mt-2">
+                    {formatCurrency(
+                      selectedClient.totalRemaining ||
+                        0
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+
+                <h4 className="font-black text-slate-900 flex items-center gap-2">
+                  <History
+                    size={18}
+                    className="text-slate-400"
+                  />
+                  Factures
+                </h4>
+
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+
+                  {selectedClient.sales?.map(
+                    (sale: ClientSale) => (
+                      <div
+                        key={sale.id}
+                        className="p-5 rounded-3xl border border-slate-100 bg-slate-50"
+                      >
+
+                        <div className="flex justify-between items-start">
+
+                          <div>
+                            <p className="font-black text-slate-900">
+                              {sale.product?.name ||
+                                "Achat"}
+                            </p>
+
+                            <p className="text-xs text-slate-400 mt-1">
+                              {new Date(
+                                sale.createdAt
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          <div className="text-right">
+
+                            <p className="font-black text-slate-900">
+                              {formatCurrency(
+                                sale.totalAmount
+                              )}
+                            </p>
+
+                            <p
+                              className={`text-xs font-black uppercase mt-1 ${
+                                sale.remaining > 0
+                                  ? "text-rose-500"
+                                  : "text-emerald-500"
+                              }`}
+                            >
+                              {sale.remaining > 0
+                                ? `Reste : ${formatCurrency(
+                                    sale.remaining
+                                  )}`
+                                : "Soldé"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {sale.remaining > 0 && (
+                          <button
+                            onClick={() =>
+                              openPaymentModal(
+                                sale
+                              )
+                            }
+                            className="mt-5 w-full py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 hover:bg-slate-900 hover:text-white transition-all flex items-center justify-center gap-2"
+                          >
+                            <CreditCard
+                              size={16}
+                            />
+                            Ajouter un versement
+                          </button>
+                        )}
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-[500px] border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-white">
+
+              <TrendingUp
+                size={52}
+                className="mb-5 opacity-20"
+              />
+
+              <p className="font-black text-slate-500 text-lg">
+                Sélectionnez un client
+              </p>
+
+              <p className="text-slate-400 mt-2">
+                Les détails et factures
+                apparaîtront ici.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {admin && showForm && (
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-xl font-bold text-slate-900">
-            {editingClientId !== null ? "Modifier le client" : "Nouveau client"}
-          </h3>
+      {/* MODAL CLIENT */}
+      {showForm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 gap-4 md:grid-cols-2"
-          >
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Nom du client
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-slate-900"
-                placeholder="Ex: Mamadou Fall"
-                required
-              />
-            </div>
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl relative">
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Téléphone
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-slate-900"
-                placeholder="Ex: 771234567"
-                required
-              />
-            </div>
+            <button
+              onClick={() => setShowForm(false)}
+              className="absolute top-8 right-8 text-slate-300 hover:text-slate-900"
+            >
+              <X size={24} />
+            </button>
+
+            <h2 className="text-3xl font-black text-slate-900 mb-8">
+
+              {isEditing
+                ? "Modifier Client"
+                : "Nouveau Client"}
+            </h2>
 
             {errorMessage && (
-              <div className="md:col-span-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+              <div className="mb-6 p-4 bg-rose-50 text-rose-600 rounded-2xl text-sm font-bold border border-rose-100">
                 {errorMessage}
               </div>
             )}
 
-            <div className="md:col-span-2 flex flex-wrap gap-3">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
+            >
+
+              <div className="space-y-2">
+
+                <label className="text-sm font-semibold text-slate-700">
+                  Nom complet
+                </label>
+
+                <input
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
+                  className="w-full bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-slate-900"
+                />
+              </div>
+
+              <div className="space-y-2">
+
+                <label className="text-sm font-semibold text-slate-700">
+                  Téléphone
+                </label>
+
+                <input
+                  required
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      phone: e.target.value,
+                    })
+                  }
+                  className="w-full bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-slate-900"
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50"
               >
                 {submitting
                   ? "Enregistrement..."
-                  : editingClientId !== null
-                  ? "Mettre à jour"
-                  : "Enregistrer"}
+                  : "Confirmer"}
               </button>
-
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-xl border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              >
-                Réinitialiser
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  resetForm();
-                  setShowForm(false);
-                }}
-                className="rounded-xl border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        {loading ? (
-          <p>Chargement...</p>
-        ) : (
-          <>
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b text-sm text-gray-500">
-                    <th className="pb-3">Nom</th>
-                    <th className="pb-3">Téléphone</th>
-                    <th className="pb-3">Achats</th>
-                    <th className="pb-3">Payé</th>
-                    <th className="pb-3">Reste</th>
-                    <th className="pb-3">Statut</th>
-                    <th className="pb-3">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredClients.map((client) => {
-                    const status = getDebtStatus(client);
-
-                    return (
-                      <tr key={client.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 font-medium text-slate-900">
-                          {client.name}
-                        </td>
-                        <td>{client.phone}</td>
-                        <td>{formatCurrency(client.totalPurchases)}</td>
-                        <td className="text-green-700">
-                          {formatCurrency(client.totalPaid)}
-                        </td>
-                        <td className="font-semibold text-red-700">
-                          {formatCurrency(client.totalRemaining)}
-                        </td>
-                        <td>
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${status.className}`}
-                          >
-                            {status.label}
-                          </span>
-                        </td>
-
-                        <td>
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleViewDetails(client.id)}
-                              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
-                            >
-                              {detailsLoadingId === client.id
-                                ? "Chargement..."
-                                : "Détails"}
-                            </button>
-
-                            {admin && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleEdit(client)}
-                                  className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100"
-                                >
-                                  Modifier
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelete(client.id)}
-                                  className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
-                                >
-                                  Supprimer
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="space-y-4 lg:hidden">
-              {filteredClients.map((client) => {
-                const status = getDebtStatus(client);
-
-                return (
-                  <div
-                    key={client.id}
-                    className="rounded-2xl border border-gray-200 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-900">
-                          {client.name}
-                        </h3>
-                        <p className="text-sm text-gray-500">{client.phone}</p>
-                      </div>
-
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${status.className}`}
-                      >
-                        {status.label}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-gray-400">Achats</p>
-                        <p className="font-medium text-slate-900">
-                          {formatCurrency(client.totalPurchases)}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-gray-400">Payé</p>
-                        <p className="font-medium text-green-700">
-                          {formatCurrency(client.totalPaid)}
-                        </p>
-                      </div>
-
-                      <div className="col-span-2">
-                        <p className="text-gray-400">Reste dû</p>
-                        <p className="font-semibold text-red-700">
-                          {formatCurrency(client.totalRemaining)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleViewDetails(client.id)}
-                        className="flex-1 rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
-                      >
-                        {detailsLoadingId === client.id ? "Chargement..." : "Détails"}
-                      </button>
-
-                      {admin && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(client)}
-                            className="flex-1 rounded-xl bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100"
-                          >
-                            Modifier
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(client.id)}
-                            className="flex-1 rounded-xl bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
-                          >
-                            Supprimer
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {filteredClients.length === 0 && (
-              <p className="mt-4 text-center text-gray-500">
-                Aucun client trouvé
-              </p>
-            )}
-          </>
-        )}
-      </div>
-
-      {showDetailsModal && selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900">
-                  {selectedClient.name}
-                </h3>
-                <p className="text-sm text-gray-500">{selectedClient.phone}</p>
-              </div>
-
-              <button
-                onClick={closeDetailsModal}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Fermer
-              </button>
-            </div>
-
-            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-sm text-gray-500">Total achats</p>
-                <p className="mt-2 text-xl font-bold text-slate-900">
-                  {formatCurrency(selectedClient.totalPurchases)}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-green-50 p-4">
-                <p className="text-sm text-gray-500">Total payé</p>
-                <p className="mt-2 text-xl font-bold text-green-700">
-                  {formatCurrency(selectedClient.totalPaid)}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-red-50 p-4">
-                <p className="text-sm text-gray-500">Reste à payer</p>
-                <p className="mt-2 text-xl font-bold text-red-700">
-                  {formatCurrency(selectedClient.totalRemaining)}
-                </p>
-              </div>
-            </div>
-
-            <h4 className="mb-4 text-lg font-semibold text-slate-900">
-              Historique des achats
-            </h4>
-
-            {selectedClient.sales.length === 0 ? (
-              <p className="text-gray-500">Aucun achat trouvé pour ce client.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b text-sm text-gray-500">
-                      <th className="pb-3">Produit</th>
-                      <th className="pb-3">Quantité</th>
-                      <th className="pb-3">Prix unitaire</th>
-                      <th className="pb-3">Total</th>
-                      <th className="pb-3">Payé</th>
-                      <th className="pb-3">Reste</th>
-                      <th className="pb-3">Note</th>
-                      <th className="pb-3">Date</th>
-                      <th className="pb-3">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedClient.sales.map((sale) => (
-                      <tr key={sale.id} className="border-b">
-                        <td className="py-3 font-medium text-slate-900">
-                          {sale.product?.name || "-"}
-                        </td>
-                        <td>{sale.quantity}</td>
-                        <td>{formatCurrency(sale.unitPrice)}</td>
-                        <td>{formatCurrency(sale.totalAmount)}</td>
-                        <td className="text-green-700">
-                          {formatCurrency(sale.paidAmount)}
-                        </td>
-                        <td className="font-semibold text-red-700">
-                          {formatCurrency(sale.remaining)}
-                        </td>
-                        <td>{sale.note || "-"}</td>
-                        <td>{new Date(sale.createdAt).toLocaleString()}</td>
-                        <td>
-                          {sale.remaining > 0 ? (
-                            <button
-                              type="button"
-                              onClick={() => openPaymentModal(sale)}
-                              className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100"
-                            >
-                              Ajouter paiement
-                            </button>
-                          ) : (
-                            <span className="text-sm text-gray-400">Soldée</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            </form>
           </div>
         </div>
       )}
 
-      {paymentModalOpen && selectedSale && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4">
-              <h3 className="text-xl font-bold text-slate-900">
-                Ajouter un paiement
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Produit : {selectedSale.product?.name || "-"}
-              </p>
-            </div>
+      {/* PAYMENT MODAL */}
+      {showPaymentModal && selectedSale && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 
-            <div className="mb-4 grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-4 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Total</span>
-                <span className="font-medium">
-                  {formatCurrency(selectedSale.totalAmount)}
-                </span>
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl relative">
+
+            <button
+              onClick={() =>
+                setShowPaymentModal(false)
+              }
+              className="absolute top-8 right-8 text-slate-300 hover:text-slate-900"
+            >
+              <X size={24} />
+            </button>
+
+            <h2 className="text-3xl font-black text-slate-900 mb-2">
+              Versement
+            </h2>
+
+            <p className="text-slate-500 mb-8">
+              Réduction de la dette
+            </p>
+
+            <div className="space-y-6">
+
+              <div className="space-y-2">
+
+                <label className="text-sm font-semibold text-slate-700">
+                  Montant
+                </label>
+
+                <input
+                  type="number"
+                  min={1}
+                  max={selectedSale.remaining}
+                  value={paymentAmount}
+                  onChange={(e) =>
+                    setPaymentAmount(
+                      e.target.value
+                    )
+                  }
+                  className="w-full bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-slate-900 font-black text-lg"
+                />
               </div>
 
-              <div className="flex justify-between">
-                <span className="text-gray-500">Déjà payé</span>
-                <span className="font-medium text-green-700">
-                  {formatCurrency(selectedSale.paidAmount)}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Reste à payer</span>
-                <span className="font-semibold text-red-700">
-                  {formatCurrency(selectedSale.remaining)}
-                </span>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Montant à ajouter
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={selectedSale.remaining}
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-slate-900"
-                placeholder="Ex: 100000"
-              />
-            </div>
-
-            <div className="flex gap-3">
               <button
-                type="button"
                 onClick={handleAddPayment}
                 disabled={paymentSubmitting}
-                className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50"
               >
-                {paymentSubmitting ? "Enregistrement..." : "Valider"}
-              </button>
-
-              <button
-                type="button"
-                onClick={closePaymentModal}
-                className="rounded-xl border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              >
-                Annuler
+                {paymentSubmitting
+                  ? "Validation..."
+                  : "Enregistrer"}
               </button>
             </div>
           </div>
         </div>
       )}
-    </section>
+    </div>
   );
 }
