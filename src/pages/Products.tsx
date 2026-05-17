@@ -420,18 +420,7 @@ export default function Products() {
               />
             </div>
 
-            <div className="md:col-span-2 space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
-                Description
-              </label>
-
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                className="w-full min-h-[120px] bg-slate-50 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-slate-900"
-              />
-            </div>
+    
 
             <div className="md:col-span-2 flex flex-wrap gap-4 pt-2">
 

@@ -10,9 +10,11 @@ import {
   Users,
   Truck,
   Wallet,
+  LogOut,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.jpg";
+import { getStoredUser } from "../utils/auth";
 
 const links = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -26,9 +28,12 @@ const links = [
 
 type SidebarContentProps = {
   onClose?: () => void;
+  onLogout?: () => void;
 };
 
-function SidebarContent({ onClose }: SidebarContentProps) {
+function SidebarContent({ onClose, onLogout }: SidebarContentProps) {
+  const user = getStoredUser();
+
   return (
     <div className="flex h-full flex-col bg-slate-900 text-white">
       <div className="border-b border-white/10 px-6 py-6">
@@ -92,11 +97,31 @@ function SidebarContent({ onClose }: SidebarContentProps) {
       </nav>
 
       <div className="border-t border-white/10 p-4">
-        <div className="rounded-2xl bg-white/5 p-4">
-          <p className="text-sm font-semibold">Version 1.0</p>
-          <p className="mt-1 text-xs text-white/60">
-            Tableau de bord stock et ventes.
-          </p>
+        <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3">
+          {/* Avatar */}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 text-sm font-bold">
+            {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+          </div>
+
+          {/* Infos */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">
+              {user?.name || "Utilisateur"}
+            </p>
+            <p className="text-xs text-white/50">
+              {user?.role === "admin" ? "Administrateur" : "Employé"}
+            </p>
+          </div>
+
+          {/* Bouton déconnexion */}
+          <button
+            type="button"
+            onClick={onLogout}
+            title="Déconnexion"
+            className="rounded-xl bg-red-500/20 p-2 text-red-400 hover:bg-red-500 hover:text-white transition"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </div>
@@ -105,6 +130,13 @@ function SidebarContent({ onClose }: SidebarContentProps) {
 
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <>
@@ -117,7 +149,7 @@ export default function Sidebar() {
       </button>
 
       <aside className="hidden min-h-screen w-64 shrink-0 md:flex">
-        <SidebarContent />
+        <SidebarContent onLogout={logout} />
       </aside>
 
       {mobileOpen && (
@@ -128,7 +160,7 @@ export default function Sidebar() {
           />
 
           <div className="absolute left-0 top-0 h-full w-72 shadow-xl">
-            <SidebarContent onClose={() => setMobileOpen(false)} />
+            <SidebarContent onClose={() => setMobileOpen(false)} onLogout={logout} />
           </div>
         </div>
       )}
