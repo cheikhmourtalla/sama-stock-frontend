@@ -1,7 +1,6 @@
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logooo.jpeg";
 
 type InvoiceSale = {
-  client: any;
   id: number;
   productId: number;
   quantity: number;
@@ -239,7 +238,7 @@ export default function InvoiceModal({ open, onClose, sale }: Props) {
 
               <div class="card">
                 <p class="card-title">Client</p>
-                <p><strong>${sale.client?.name || sale.customer  || "Client non précisé"}</strong></p>
+                <p><strong>${sale.customer || "Client non précisé"}</strong></p>
                 <p>Date de la vente : ${formattedDate}</p>
               </div>
             </div>
