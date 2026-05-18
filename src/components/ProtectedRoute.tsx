@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
+import React from "react";
 
 export default function ProtectedRoute({
   children,
 }: {
-  children: JSX.Element;
+  children: React.JSX.Element;
 }) {
   const token = localStorage.getItem("token");
 

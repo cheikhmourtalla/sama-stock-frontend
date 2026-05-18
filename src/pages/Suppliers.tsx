@@ -4,7 +4,7 @@ import {
   Search,
   Phone,
   Truck,
-  CreditCard,
+  // CreditCard,
   History,
   ChevronRight,
   Trash2,
@@ -64,7 +64,6 @@ export default function Suppliers() {
   // États Paiement par tranche
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
   const [paymentData, setPaymentData] = useState({ amount: "", method: "Espèces" });
 
   const fetchData = async () => {

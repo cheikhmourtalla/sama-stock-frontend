@@ -30,13 +30,18 @@ export type ProductListResponse = {
 };
 
 export const getProducts = async (
-p0: string, p1: string, p2: number, p3: number, params?: ProductQueryParams): Promise<ProductListResponse> => {
+  p0?: string,
+  p1?: string,
+  p2?: number,
+  p3?: number,
+  params?: ProductQueryParams,
+): Promise<ProductListResponse> => {
   const response = await api.get("/products", { params });
   return response.data;
 };
 
 export const createProduct = async (
-  payload: CreateProductPayload
+  payload: CreateProductPayload,
 ): Promise<Product> => {
   const response = await api.post("/products", payload);
   return response.data.product;
@@ -44,7 +49,7 @@ export const createProduct = async (
 
 export const updateProduct = async (
   id: number,
-  payload: CreateProductPayload
+  payload: CreateProductPayload,
 ): Promise<Product> => {
   const response = await api.put(`/products/${id}`, payload);
   return response.data.product;
