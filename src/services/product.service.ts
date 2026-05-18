@@ -18,7 +18,9 @@ export type ProductQueryParams = {
 };
 
 export type ProductListResponse = {
-  products(products: ProductListResponse): unknown;
+  // products(products: ProductListResponse): unknown;
+
+
   products: ProductListResponse;
   data: Product[];
   pagination: {
@@ -30,10 +32,10 @@ export type ProductListResponse = {
 };
 
 export const getProducts = async (
-  p0?: string,
-  p1?: string,
-  p2?: number,
-  p3?: number,
+  _p0?: string,
+  _p1?: string,
+  _p2?: number,
+  _p3?: number,
   params?: ProductQueryParams,
 ): Promise<ProductListResponse> => {
   const response = await api.get("/products", { params });

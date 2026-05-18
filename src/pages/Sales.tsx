@@ -24,7 +24,8 @@ type Product = {
   quantity: number;
   salePrice: number;
 };
-type Client = { id: number; name: string; phone: string };
+type Client = { id: number; name: string; phone: string; data?: string };
+
 type Sale = {
   id: number;
   totalAmount: number;
@@ -71,7 +72,7 @@ export default function Sales() {
           // productsRes?.data ||
           [],
       );
-      setClients(clients?.data|| clientsRes || []);
+      setClients(clients || clientsRes || []);
       setSales(salesRes?.data || salesRes || []);
     } catch {
       toast.error("Erreur de chargement");
