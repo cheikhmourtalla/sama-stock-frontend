@@ -25,7 +25,7 @@ export default function Login() {
 
     try {
       const res = await login({ email, password });
-
+      console.log(res);
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
 
@@ -35,13 +35,13 @@ export default function Login() {
       console.error("Erreur login", error);
 
       toast.error(
-        error?.response?.data?.message ||
-          "Email ou mot de passe incorrect"
+        error?.response?.data?.message || "Email ou mot de passe incorrect",
       );
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
@@ -59,6 +59,8 @@ export default function Login() {
           <p className="mt-2 text-sm text-gray-500">
             Connectez-vous à votre espace administrateur
           </p>
+
+          {/* {Test()} */}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
