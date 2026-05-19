@@ -72,7 +72,7 @@ export default function Sales() {
           // productsRes?.data ||
           [],
       );
-      setClients(clients || clientsRes || []);
+      setClients(clients?.data || clientsRes || []);
       setSales(salesRes?.data || salesRes || []);
     } catch {
       toast.error("Erreur de chargement");
@@ -103,11 +103,13 @@ export default function Sales() {
     [clients, clientSearch],
   );
 
-  const totalAmount = useMemo(
-    () => cart.reduce((sum, item) => sum + item.total, 0),
+  const totalAmount: number = useMemo(
+    () => cart.reduce((sum, item) => sum + Number(item.total), 0),
     [cart],
   );
-  const remainingAmount = useMemo(
+  console.log(totalAmount);
+
+  const remainingAmount: number = useMemo(
     () => Math.max(0, totalAmount - paidAmount),
     [totalAmount, paidAmount],
   );

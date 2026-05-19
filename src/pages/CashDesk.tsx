@@ -13,7 +13,7 @@ import { api } from "../services/api";
 export default function Cash() {
   const [session, setSession] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
-  const [openingAmount, setOpeningAmount] = useState("");
+  const [openingAmount, setOpeningAmount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<"caisse" | "historique">("caisse");
 
   // Modale d'ajout de mouvements
@@ -56,7 +56,7 @@ export default function Cash() {
       });
       fetchCurrentSession();
       fetchHistory();
-      setOpeningAmount("");
+      setOpeningAmount(0);
     } catch (error: any) {
       alert(error.response?.data?.message || "Erreur lors de l'ouverture");
     }
@@ -104,7 +104,7 @@ export default function Cash() {
   const totalEntries =
     session?.movements?.reduce((acc: number, movement: any) => {
       if (movement.type === "SALE" || movement.type === "CLIENT_PAYMENT") {
-        return acc + movement.amount;
+        return Number(acc + movement.amount);
       }
       return acc;
     }, 0) || 0;
@@ -112,7 +112,7 @@ export default function Cash() {
   const totalOutputs =
     session?.movements?.reduce((acc: number, movement: any) => {
       if (movement.type === "SUPPLIER_PAYMENT" || movement.type === "EXPENSE") {
-        return acc + movement.amount;
+        return Number(acc + movement.amount);
       }
       return acc;
     }, 0) || 0;
@@ -166,7 +166,7 @@ export default function Cash() {
                 type="number"
                 placeholder="Ex: 25000 FCFA"
                 value={openingAmount}
-                onChange={(e) => setOpeningAmount(e.target.value)}
+                onChange={(e) => setOpeningAmount(Number(e.target.value))}
                 className="w-full border rounded-2xl px-4 py-3.5 text-center text-xl font-bold focus:ring-2 focus:ring-green-500 outline-none"
               />
               <button
@@ -186,11 +186,11 @@ export default function Cash() {
                   </p>
                   <h2 className="text-3xl font-black text-blue-900 mt-2">
                     {(
-                      session.openingAmount +
+                      Number(session.openingAmount) +
                       totalEntries -
                       totalOutputs
                     ).toLocaleString()}{" "}
-                    F
+                    F{typeof session.openingAmount}
                   </h2>
                 </div>
                 <div className="bg-white p-5 rounded-3xl border shadow-sm">
