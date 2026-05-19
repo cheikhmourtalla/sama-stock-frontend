@@ -101,18 +101,18 @@ export default function Cash() {
     }
   };
 
-  const totalEntries =
+  const totalEntries: number =
     session?.movements?.reduce((acc: number, movement: any) => {
       if (movement.type === "SALE" || movement.type === "CLIENT_PAYMENT") {
-        return Number(acc + movement.amount);
+        return Number(acc + Number(movement.amount));
       }
       return acc;
     }, 0) || 0;
 
-  const totalOutputs =
+  const totalOutputs: number =
     session?.movements?.reduce((acc: number, movement: any) => {
       if (movement.type === "SUPPLIER_PAYMENT" || movement.type === "EXPENSE") {
-        return Number(acc + movement.amount);
+        return Number(acc + Number(movement.amount));
       }
       return acc;
     }, 0) || 0;
@@ -187,10 +187,10 @@ export default function Cash() {
                   <h2 className="text-3xl font-black text-blue-900 mt-2">
                     {(
                       Number(session.openingAmount) +
-                      totalEntries -
-                      totalOutputs
+                      Number(totalEntries) -
+                      Number(totalOutputs)
                     ).toLocaleString()}{" "}
-                    F{typeof session.openingAmount}
+                    F
                   </h2>
                 </div>
                 <div className="bg-white p-5 rounded-3xl border shadow-sm">
