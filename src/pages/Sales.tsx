@@ -72,7 +72,7 @@ export default function Sales() {
           // productsRes?.data ||
           [],
       );
-      setClients(clients?.data || clientsRes || []);
+      setClients(clientsRes || clientsRes || []);
       setSales(salesRes?.data || salesRes || []);
     } catch {
       toast.error("Erreur de chargement");
