@@ -75,6 +75,9 @@ export default function Clients() {
   const [paymentSubmitting, setPaymentSubmitting] =
     useState(false);
 
+  const [paymentMethod, setPaymentMethod] =
+    useState<"CASH" | "WAVE" | "ORANGE_MONEY">("CASH");
+
   const [selectedClient, setSelectedClient] =
     useState<any>(null);
 
@@ -166,10 +169,12 @@ export default function Clients() {
     try {
       await addSalePayment(
         selectedSale.id,
-        Number(paymentAmount)
+        Number(paymentAmount),
+        paymentMethod
       );
 
       toast.success("Versement enregistré");
+      setPaymentMethod("CASH");
 
       setShowPaymentModal(false);
 
@@ -742,6 +747,27 @@ export default function Clients() {
                   }
                   className="w-full bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-slate-900 font-black text-lg"
                 />
+              </div>
+
+              <div className="space-y-2">
+
+                <label className="text-sm font-semibold text-slate-700">
+                  Mode de paiement
+                </label>
+
+                <select
+                  value={paymentMethod}
+                  onChange={(e) =>
+                    setPaymentMethod(
+                      e.target.value as any
+                    )
+                  }
+                  className="w-full bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-slate-900 font-bold text-slate-700"
+                >
+                  <option value="CASH">⚫ Espèces (Cash)</option>
+                  <option value="WAVE">🟢 Wave</option>
+                  <option value="ORANGE_MONEY">🟠 Orange Money</option>
+                </select>
               </div>
 
               <button

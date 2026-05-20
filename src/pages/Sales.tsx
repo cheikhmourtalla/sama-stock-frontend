@@ -55,6 +55,9 @@ export default function Sales() {
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<number | 0>(0);
   const [paidAmount, setPaidAmount] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<
+    "CASH" | "WAVE" | "ORANGE_MONEY"
+  >("CASH");
   const [showInvoice, setShowInvoice] = useState(false);
   const [lastSale, setLastSale] = useState<any>(null);
 
@@ -72,7 +75,7 @@ export default function Sales() {
           // productsRes?.data ||
           [],
       );
-      setClients(clientsRes || clientsRes || []);
+      setClients(clientsRes || []);
       setSales(salesRes?.data || salesRes || []);
     } catch {
       toast.error("Erreur de chargement");
@@ -185,6 +188,7 @@ export default function Sales() {
         quantity: firstItem.quantity,
         clientId: selectedClientId > 0 ? selectedClientId : undefined,
         paidAmount,
+        paymentMethod,
       });
       setLastSale({
         id: response?.id || Math.floor(Math.random() * 99999),
@@ -203,13 +207,14 @@ export default function Sales() {
       });
       setCart([]);
       setPaidAmount(0);
+      setPaymentMethod("CASH");
       setSelectedClientId(0);
       setClientSearch("");
       setShowInvoice(true);
       toast.success("Vente enregistrée");
       await loadData();
     } catch {
-      toast.error("Erreur lors de la vente");
+      toast.error("Erreur lors de la vente Verifier si la caisse est ouverte");
     } finally {
       setSubmitting(false);
     }
@@ -505,6 +510,22 @@ export default function Sales() {
                       <span className="font-black text-lg">
                         {totalAmount.toLocaleString()} F
                       </span>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase text-stone-500">
+                        Mode de paiement
+                      </label>
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) =>
+                          setPaymentMethod(e.target.value as any)
+                        }
+                        className="w-full border border-stone-200 rounded-xl px-3 py-3 bg-white text-stone-800 font-medium"
+                      >
+                        <option value="CASH">⚫ Espèces (Cash)</option>
+                        <option value="WAVE">🟢 Wave</option>
+                        <option value="ORANGE_MONEY">🟠 Orange Money</option>
+                      </select>
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase text-stone-500">

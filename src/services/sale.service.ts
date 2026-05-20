@@ -25,7 +25,7 @@ export const deleteSale = async (id: number) => {
   return response.data.data;
 };
 
-export const addSalePayment = async (saleId: number, amount: number) => {
-  const response = await api.patch(`/sales/${saleId}/payment`, { amount });
+export const addSalePayment = async (saleId: number, amount: number, paymentMethod: string = "CASH") => {
+  const response = await api.patch(`/sales/${saleId}/payment`, { amount, paymentMethod });
   return response.data.data;
 };
