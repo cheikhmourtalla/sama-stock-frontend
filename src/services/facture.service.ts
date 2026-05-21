@@ -22,11 +22,12 @@ export interface Facture {
 }
 
 export const factureService = {
-  async getFactures(page = 1, limit = 10) {
+  async getFactures(page = 1, limit = 10, search = "") {
     const response = await api.get("sales/factures", {
       params: {
         page,
         limit,
+        search,
       },
     });
 

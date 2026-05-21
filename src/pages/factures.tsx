@@ -8,10 +8,11 @@ import { useNavigate } from "react-router-dom";
 
 export default function FacturePage() {
   const navigate = useNavigate();
+  const [totalPages, setTotalPages] = useState(1);
   const [factures, setFactures] = useState<Facture[]>([]);
 
   const [loading, setLoading] = useState(true);
-
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const limit = 10;
@@ -20,9 +21,11 @@ export default function FacturePage() {
     try {
       setLoading(true);
 
-      const response = await factureService.getFactures(page, limit);
+      const response = await factureService.getFactures(page, limit, search);
 
       setFactures(response.data);
+      console.log(response);
+      setTotalPages(response.pagination.totalPages);
     } catch (error) {
       console.error(error);
     } finally {
@@ -32,7 +35,7 @@ export default function FacturePage() {
 
   useEffect(() => {
     loadFactures();
-  }, [page]);
+  }, [page, search]);
 
   const handleView = (id: number) => {
     console.log("voir facture", id);
@@ -48,6 +51,19 @@ export default function FacturePage() {
         <p className="text-gray-500">Gestion des factures clients</p>
       </div>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Rechercher par numéro ou client..."
+          value={search}
+          onChange={(e) => {
+            setPage(1);
+            setSearch(e.target.value);
+          }}
+          className="w-full md:w-96 px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-black"
+        />
+      </div>
+
       {loading ? (
         <div>Chargement...</div>
       ) : (
@@ -55,22 +71,28 @@ export default function FacturePage() {
       )}
 
       {/* pagination placeholder */}
-      <div className="flex items-center justify-end gap-2 mt-6">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          className="px-3 py-2 border rounded"
-        >
-          Précédent
-        </button>
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-sm text-gray-500">
+          Page {page} sur {totalPages}
+        </div>
 
-        <span>Page {page}</span>
+        <div className="flex gap-2">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Précédent
+          </button>
 
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          className="px-3 py-2 border rounded"
-        >
-          Suivant
-        </button>
+          <button
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Suivant
+          </button>
+        </div>
       </div>
     </div>
   );
