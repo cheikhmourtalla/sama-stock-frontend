@@ -65,7 +65,7 @@ export default function Sales() {
     try {
       setLoading(true);
       const [products, clientsRes, salesRes] = await Promise.all([
-        getProducts("", "", 1, 100),
+        getProducts(1, 100),
         getClients(),
         getSales().catch(() => []),
       ]);
