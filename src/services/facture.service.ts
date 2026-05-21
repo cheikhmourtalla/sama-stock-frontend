@@ -45,4 +45,16 @@ export const factureService = {
 
     return response.data;
   },
+
+  async addPayment(
+    id: number,
+    payload: {
+      amount: number;
+      paymentMethod: string;
+    },
+  ) {
+    const response = await api.post(`sales/facture/${id}/payment`, payload);
+
+    return response.data;
+  },
 };

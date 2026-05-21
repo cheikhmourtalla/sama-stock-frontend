@@ -11,7 +11,17 @@ export default function FactureDetailPage() {
   const { id } = useParams();
 
   const [facture, setFacture] = useState<Facture | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  const [paymentAmount, setPaymentAmount] = useState("");
+
+  const [paymentMethod, setPaymentMethod] = useState<
+    "CASH" | "WAVE" | "ORANGE_MONEY"
+  >("CASH");
+
+  const [submittingPayment, setSubmittingPayment] = useState(false);
 
   async function loadFacture() {
     try {
@@ -107,6 +117,33 @@ export default function FactureDetailPage() {
     document.body.removeChild(wrapper);
   }
 
+  async function handlePayment() {
+    if (!facture) return;
+
+    if (!paymentAmount || Number(paymentAmount) <= 0) {
+      return;
+    }
+
+    setSubmittingPayment(true);
+
+    try {
+      await factureService.addPayment(facture.id, {
+        amount: Number(paymentAmount),
+        paymentMethod,
+      });
+
+      await loadFacture();
+
+      setShowPaymentModal(false);
+
+      setPaymentAmount("");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmittingPayment(false);
+    }
+  }
+
   if (loading) return <div className="p-6">Chargement...</div>;
   if (!facture) return <div className="p-6">Facture introuvable</div>;
 
@@ -124,6 +161,18 @@ export default function FactureDetailPage() {
     <div className="p-6 space-y-6 bg-stone-100 min-h-screen">
       {/* ACTIONS */}
       <div className="flex gap-3">
+        {facture.resteDu > 0 && (
+          <button
+            onClick={() => {
+              setPaymentAmount(facture.resteDu.toString());
+
+              setShowPaymentModal(true);
+            }}
+            className="px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold"
+          >
+            Régler la facture
+          </button>
+        )}
         <button
           onClick={printInvoice}
           className="px-5 py-3 bg-black text-white rounded-xl font-semibold"
@@ -276,6 +325,69 @@ export default function FactureDetailPage() {
           </div>
         </div>
       </div>
+
+      {showPaymentModal && facture && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold">Régler la facture</h2>
+
+              <p className="text-gray-500 mt-1">
+                Reste dû : {facture.resteDu.toLocaleString()} FCFA
+              </p>
+            </div>
+
+            {/* montant */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Montant à verser</label>
+
+              <input
+                type="number"
+                min={1}
+                max={facture.resteDu}
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3"
+              />
+            </div>
+
+            {/* mode */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Mode de paiement</label>
+
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as any)}
+                className="w-full border rounded-xl px-4 py-3"
+              >
+                <option value="CASH">Espèces</option>
+
+                <option value="WAVE">Wave</option>
+
+                <option value="ORANGE_MONEY">Orange Money</option>
+              </select>
+            </div>
+
+            {/* actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="flex-1 border rounded-xl py-3 font-semibold"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={handlePayment}
+                disabled={submittingPayment}
+                className="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-semibold"
+              >
+                {submittingPayment ? "Traitement..." : "Valider"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

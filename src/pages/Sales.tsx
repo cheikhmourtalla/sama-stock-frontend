@@ -60,15 +60,30 @@ export default function Sales() {
   >("CASH");
   const [showInvoice, setShowInvoice] = useState(false);
   const [lastSale, setLastSale] = useState<any>(null);
+  const [salesPage, setSalesPage] = useState(1);
+  const [salesPagination, setSalesPagination] = useState<any>(null);
 
   const loadData = async () => {
     try {
-      setLoading(true);
       const [products, clientsRes, salesRes] = await Promise.all([
         getProducts(1, 100),
         getClients(),
         getSales().catch(() => []),
       ]);
+
+      setProducts(products?.data || []);
+
+      setClients(clientsRes || []);
+
+      setSales(
+        Array.isArray(salesRes)
+          ? salesRes
+          : Array.isArray(salesRes?.data)
+            ? salesRes.data
+            : [],
+      );
+      setSalesPagination(salesRes?.pagination || null);
+      setLoading(true);
       setProducts(
         products?.data ||
           // productsRes?.data?.products ||
@@ -76,7 +91,9 @@ export default function Sales() {
           [],
       );
       setClients(clientsRes || []);
-      setSales(salesRes?.data || salesRes || []);
+      // setSales(salesRes?.data || salesRes || []);
+
+      const safeArray = Array.isArray(salesRes?.data) ? salesRes?.data : [];
     } catch {
       toast.error("Erreur de chargement");
     } finally {
@@ -86,7 +103,7 @@ export default function Sales() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [salesPage]);
 
   const filteredProducts = useMemo(
     () =>
@@ -179,9 +196,15 @@ export default function Sales() {
       toast.error("Panier vide");
       return;
     }
+
     setSubmitting(true);
     try {
       const client = clients.find((c) => c.id === selectedClientId);
+      if (selectedClientId === 0) {
+        console.log(filteredClients);
+        toast.error("Choisir un client");
+        return;
+      }
       const response = await createSale({
         items: cart,
         clientId: selectedClientId > 0 ? selectedClientId : undefined,
@@ -316,7 +339,7 @@ export default function Sales() {
               <div>
                 <h1 className="text-3xl font-black text-stone-900 flex items-center gap-3">
                   <ShoppingCart className="text-amber-700" />
-                  Caisse
+                  Ventes
                 </h1>
                 <p className="text-stone-500 mt-2">
                   Gestion des ventes et impression des factures.
@@ -377,6 +400,29 @@ export default function Sales() {
                   ))}
                 </div>
 
+                {salesPagination && (
+                  <div className="flex items-center justify-between pt-4">
+                    <button
+                      disabled={salesPage <= 1}
+                      onClick={() => setSalesPage((p) => p - 1)}
+                      className="px-4 py-2 rounded-xl border border-stone-200 disabled:opacity-50"
+                    >
+                      Précédent
+                    </button>
+
+                    <span className="text-sm font-medium text-stone-600">
+                      Page {salesPagination.page} / {salesPagination.totalPages}
+                    </span>
+
+                    <button
+                      disabled={salesPage >= salesPagination.totalPages}
+                      onClick={() => setSalesPage((p) => p + 1)}
+                      className="px-4 py-2 rounded-xl border border-stone-200 disabled:opacity-50"
+                    >
+                      Suivant
+                    </button>
+                  </div>
+                )}
                 {/* HISTORIQUE */}
                 <div className="bg-white rounded-3xl border border-stone-200 p-6">
                   <div className="flex items-center gap-2 mb-5">
@@ -384,7 +430,7 @@ export default function Sales() {
                     <h3 className="font-black">Dernières ventes</h3>
                   </div>
                   <div className="space-y-4">
-                    {sales.slice(0, 5).map((sale) => (
+                    {sales.map((sale) => (
                       <div
                         key={sale.id}
                         className="flex justify-between items-center border-b border-stone-100 pb-3"
@@ -445,7 +491,7 @@ export default function Sales() {
                       }
                       className="w-full border border-stone-200 rounded-xl px-3 py-3"
                     >
-                      <option value={0}>Client Passager</option>
+                      <option value={0}>Choisir un client</option>
                       {filteredClients.map((client) => (
                         <option key={client.id} value={client.id}>
                           {client.name} ({client.phone})
