@@ -269,14 +269,6 @@ export default function Clients() {
             <UserPlus size={18} />
             Nouveau Client
           </button>
-
-          <button
-            onClick={() => navigate("/clients")}
-            className="bg-white border border-slate-200 hover:bg-slate-900 hover:text-white text-slate-700 px-4 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all"
-          >
-            <List size={18} />
-            Liste des clients
-          </button>
         </div>
       </div>
 
@@ -332,12 +324,40 @@ export default function Clients() {
                 </div>
 
                 {/* ACTIONS */}
-                <button
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                  onClick={() => setSelectedClient(client)}
-                >
-                  <Eye size={18} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* VIEW */}
+                  <button
+                    className="p-2 rounded-lg hover:bg-gray-100"
+                    onClick={() => setSelectedClient(client)}
+                  >
+                    <Eye size={18} />
+                  </button>
+
+                  {/* EDIT */}
+                  <button
+                    className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"
+                    onClick={() => {
+                      setFormData({
+                        name: client.name,
+                        phone: client.phone,
+                      });
+                      setIsEditing(true);
+                      setEditId(client.id);
+                      setShowForm(true);
+                      setErrorMessage("");
+                    }}
+                  >
+                    ✏️
+                  </button>
+
+                  {/* DELETE */}
+                  <button
+                    className="p-2 rounded-lg hover:bg-red-50 text-red-600"
+                    onClick={(e) => handleDelete(e, client.id)}
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
             ))}
           </div>

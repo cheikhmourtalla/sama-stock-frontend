@@ -71,52 +71,37 @@ export default function FactureDetailPage() {
       printWindow.close();
     }, 600);
   }
-
   async function downloadPDF() {
     const element = document.getElementById("invoice-print");
+
     if (!element) return;
 
-    if (document.fonts?.ready) {
-      await document.fonts.ready;
-    }
+    try {
+      await html2pdf(element, {
+        margin: 10,
+        filename: "facture.pdf",
 
-    const wrapper = document.createElement("div");
-
-    wrapper.style.position = "fixed";
-    wrapper.style.left = "0";
-    wrapper.style.top = "0";
-    wrapper.style.width = "210mm";
-    wrapper.style.background = "white";
-    wrapper.style.opacity = "0";
-
-    const clone = element.cloneNode(true);
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-
-    await html2pdf()
-      .set({
-        margin: 0,
-        filename: `facture-${facture?.numero}.pdf`,
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: {
-          scale: 3,
-          useCORS: true,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: 1200,
+        image: {
+          type: "jpeg",
+          quality: 0.98,
         },
+
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+        },
+
         jsPDF: {
           unit: "mm",
           format: "a4",
           orientation: "portrait",
         },
-      })
-      .from(wrapper)
-      .save();
-
-    document.body.removeChild(wrapper);
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
-
   async function handlePayment() {
     if (!facture) return;
 
