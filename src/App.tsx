@@ -12,8 +12,8 @@ import Sales from "./pages/Sales";
 import Clients from "./pages/Clients";
 import Suppliers from "./pages/Suppliers";
 import CashDesk from "./pages/CashDesk";
-
-
+import FacturePage from "./pages/factures";
+import FactureDetailPage from "./pages/FactureDetail";
 
 export default function App() {
   return (
@@ -47,7 +47,8 @@ export default function App() {
           <Route path="/sales" element={<Sales />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/cash" element={<CashDesk />} />
-        
+          <Route path="/factures" element={<FacturePage />} />
+          <Route path="/factures/:id" element={<FactureDetailPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

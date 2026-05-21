@@ -10,21 +10,25 @@ const pageConfig: Record<string, { title: string; description: string }> = {
     description: "Gérez vos produits, vos références et vos alertes.",
   },
   "/clients": {
-  title: "Clients",
-  description: "Gérez vos clients et suivez leurs comptes.",
-},
+    title: "Clients",
+    description: "Gérez vos clients et suivez leurs comptes.",
+  },
   "/stock": {
     title: "Stock",
     description: "Enregistrez les entrées, sorties et mouvements.",
   },
- // "/sales": {
+  // "/sales": {
   //  title: "Ventes",
-   // description: "Suivez les ventes et les montants générés.",
- // },
+  // description: "Suivez les ventes et les montants générés.",
+  // },
   "/supplies": {
-  title: "Approvisionnements",
-  description: "Enregistrez vos achats fournisseurs et suivez les acomptes.",
-},
+    title: "Approvisionnements",
+    description: "Enregistrez vos achats fournisseurs et suivez les acomptes.",
+  },
+  "/facture": {
+    title: "List des factures",
+    description: "",
+  },
 };
 
 export default function Header() {
@@ -41,9 +45,7 @@ export default function Header() {
         <h2 className="text-2xl font-bold text-slate-900">
           {currentPage.title}
         </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          {currentPage.description}
-        </p>
+        <p className="mt-1 text-sm text-gray-500">{currentPage.description}</p>
       </div>
     </header>
   );

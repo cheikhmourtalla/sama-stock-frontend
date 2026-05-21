@@ -24,6 +24,7 @@ const links = [
   { name: "Stock", path: "/stock", icon: Boxes },
   { name: "Ventes", path: "/sales", icon: ShoppingCart },
   { name: "Fournisseurs", path: "/suppliers", icon: Truck },
+  { name: "Factures", path: "/factures", icon: Truck },
 ];
 
 type SidebarContentProps = {
@@ -160,7 +161,10 @@ export default function Sidebar() {
           />
 
           <div className="absolute left-0 top-0 h-full w-72 shadow-xl">
-            <SidebarContent onClose={() => setMobileOpen(false)} onLogout={logout} />
+            <SidebarContent
+              onClose={() => setMobileOpen(false)}
+              onLogout={logout}
+            />
           </div>
         </div>
       )}
