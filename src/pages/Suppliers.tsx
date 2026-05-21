@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Wallet,
   MapPin,
-  Plus
+  Plus,
 } from "lucide-react";
 
 import { api } from "../services/api";

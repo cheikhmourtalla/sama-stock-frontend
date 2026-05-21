@@ -8,6 +8,7 @@ import {
   X,
   ChevronRight,
   Users,
+  ScrollText,
   Truck,
   Wallet,
   LogOut,
@@ -19,12 +20,12 @@ import { getStoredUser } from "../utils/auth";
 const links = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
   { name: "Caisse", path: "/cash", icon: Wallet },
+  { name: "Factures", path: "/factures", icon: ScrollText },
   { name: "Produits", path: "/products", icon: Package },
   { name: "Clients", path: "/clients", icon: Users },
   { name: "Stock", path: "/stock", icon: Boxes },
   { name: "Ventes", path: "/sales", icon: ShoppingCart },
   { name: "Fournisseurs", path: "/suppliers", icon: Truck },
-  { name: "Factures", path: "/factures", icon: Truck },
 ];
 
 type SidebarContentProps = {

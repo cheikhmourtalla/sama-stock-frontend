@@ -54,7 +54,7 @@ export default function FacturePage() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Rechercher par numéro ou client..."
+          placeholder="Rechercher par nom du client..."
           value={search}
           onChange={(e) => {
             setPage(1);
