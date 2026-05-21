@@ -6,4 +6,6 @@ export type Client = {
   totalPurchases: number;
   totalPaid: number;
   totalRemaining: number;
+
+  sales?: any[];
 };

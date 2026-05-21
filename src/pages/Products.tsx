@@ -160,7 +160,7 @@ export default function Products() {
       console.error(error);
 
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Erreur lors de la suppression"
       );
     }
@@ -197,7 +197,7 @@ export default function Products() {
       console.error(error);
 
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
           "Erreur lors de l'enregistrement"
       );
     } finally {

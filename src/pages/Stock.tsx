@@ -156,7 +156,7 @@ export default function Stock() {
       console.error(error);
 
       toast.error(
-        error?.response?.data?.message ||
+        error?.response?.data?.details ||
         "Erreur lors du mouvement"
       );
 

@@ -94,7 +94,7 @@ export default function Cash() {
       setOpeningAmount("");
     } catch (error: any) {
       toast.error(
-        error.response?.data?.message || "Erreur lors de l'ouverture",
+        error.response?.data?.details || "Erreur lors de l'ouverture",
       );
     } finally {
       setOpeningSubmitting(false);
@@ -132,7 +132,7 @@ export default function Cash() {
       // Navigate back to dashboard after closing
       // navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erreur lors de la clôture");
+      toast.error(error.response?.data?.details || "Erreur lors de la clôture");
     } finally {
       setClosingSubmitting(false);
     }
@@ -185,7 +185,7 @@ export default function Cash() {
       setMvtNote("");
       setMvtMethod("CASH");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erreur lors du mouvement");
+      toast.error(error.response?.data?.details || "Erreur lors du mouvement");
     } finally {
       setSubmittingMovement(false);
     }

@@ -11,7 +11,17 @@ export const getClients = async (): Promise<Client[]> => {
   // console.log(response.data.data);
   return response.data.data;
 };
+export const getClientsList = async (
+  page = 1,
+  limit = 10,
+  search = ""
+) => {
+  const response = await api.get("/clients/all", {
+    params: { page, limit, search },
+  });
 
+  return response.data;
+};
 export const getClientById = async (id: number) => {
   const response = await api.get(`/clients/${id}`);
   return response.data.data;

@@ -35,7 +35,7 @@ export default function Login() {
       console.error("Erreur login", error);
 
       toast.error(
-        error?.response?.data?.message || "Email ou mot de passe incorrect",
+        error?.response?.data?.details || "Email ou mot de passe incorrect",
       );
     } finally {
       setLoading(false);

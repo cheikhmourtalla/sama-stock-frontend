@@ -14,6 +14,7 @@ import Suppliers from "./pages/Suppliers";
 import CashDesk from "./pages/CashDesk";
 import FacturePage from "./pages/factures";
 import FactureDetailPage from "./pages/FactureDetail";
+import ClientsListPage from "./pages/ClientsList";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/products" element={<Products />} />
           <Route path="/clients" element={<Clients />} />
+          <Route path="/clients-list" element={<ClientsListPage />} />
           <Route path="/stock" element={<Stock />} />
           <Route path="/sales" element={<Sales />} />
           <Route path="/suppliers" element={<Suppliers />} />
