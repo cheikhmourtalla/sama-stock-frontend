@@ -182,10 +182,8 @@ export default function Sales() {
     setSubmitting(true);
     try {
       const client = clients.find((c) => c.id === selectedClientId);
-      const firstItem = cart[0];
       const response = await createSale({
-        productId: firstItem.productId,
-        quantity: firstItem.quantity,
+        items: cart,
         clientId: selectedClientId > 0 ? selectedClientId : undefined,
         paidAmount,
         paymentMethod,
