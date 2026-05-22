@@ -30,7 +30,7 @@ export type ProductListResponse = {
   };
 };
 
-export const getProducts = async (page = 1, limit = 10) => {
+export const getProducts = async (page  : number, limit : number) => {
   const response = await api.get(`/products?page=${page}&limit=${limit}`);
 
   return response.data;
