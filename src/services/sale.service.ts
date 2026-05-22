@@ -5,6 +5,11 @@ export const getSales = async (page = 1, limit = 20) => {
 
   return response.data.data;
 };
+export const getSalestats = async () => {
+  const response = await api.get(`/sales?page=${0}&limit=${5}`);
+
+  return response.data.data;
+};
 
 export const getSalesStats = async () => {
   const res = await api.get("/sales/stats");

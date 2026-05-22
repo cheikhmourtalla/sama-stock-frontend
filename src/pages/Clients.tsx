@@ -11,8 +11,6 @@ import {
   Phone,
   Eye,
 } from "lucide-react";
-// import { List } from "lucide-react";
-// import { useNavigate } from "react-router-dom";
 import {
   createClient,
   deleteClient,
