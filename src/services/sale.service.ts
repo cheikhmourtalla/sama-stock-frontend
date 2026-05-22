@@ -5,6 +5,14 @@ export const getSales = async (page = 1, limit = 20) => {
 
   return response.data.data;
 };
+
+export const getSalesStats = async () => {
+  const res = await api.get("/sales/stats");
+
+  console.log(res.data);
+
+  return res.data;
+};
 export const getSaleById = async (id: number) => {
   const response = await api.get(`/sales/${id}`);
   return response.data.data;

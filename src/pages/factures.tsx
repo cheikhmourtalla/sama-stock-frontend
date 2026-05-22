@@ -5,6 +5,7 @@ import FactureTable from "../components/factures/FactureTable";
 
 import { factureService } from "../services/facture.service";
 import { useNavigate } from "react-router-dom";
+ 
 
 export default function FacturePage() {
   const navigate = useNavigate();

@@ -24,7 +24,6 @@ import type { Product } from "../types/product";
 import type { StockMovement } from "../types/stock";
 
 export default function Stock() {
-
   // ===============================
   // STATES
   // ===============================
@@ -49,9 +48,8 @@ export default function Stock() {
   // ===============================
   const fetchData = async () => {
     try {
-
       const [productsResponse, movementsResponse] = await Promise.all([
-        getProducts(),
+        getProducts(1, 10),
         getStockMovements(),
       ]);
 
@@ -60,12 +58,10 @@ export default function Stock() {
       // IMPORTANT :
       // On filtre les ventes
       const filteredMovements = (movementsResponse || []).filter(
-        (m: StockMovement) =>
-          m.type === "ENTRY" || m.type === "OUT"
+        (m: StockMovement) => m.type === "ENTRY" || m.type === "OUT",
       );
 
       setMovements(filteredMovements);
-
     } catch (error) {
       console.error(error);
 
@@ -84,21 +80,17 @@ export default function Stock() {
   // STATS
   // ===============================
   const stats = useMemo(() => {
-
     const lowStock = products.filter(
-      (p) => p.quantity > 0 && p.quantity <= 5
+      (p) => p.quantity > 0 && p.quantity <= 5,
     ).length;
 
-    const outOfStock = products.filter(
-      (p) => p.quantity === 0
-    ).length;
+    const outOfStock = products.filter((p) => p.quantity === 0).length;
 
     return {
       lowStock,
       outOfStock,
       total: products.length,
     };
-
   }, [products]);
 
   // ===============================
@@ -118,12 +110,10 @@ export default function Stock() {
     setSubmitting(true);
 
     try {
-
       // ===============================
       // ENTRÉE
       // ===============================
       if (movementType === "ENTRY") {
-
         await addStockEntry(formData);
 
         toast.success("Entrée de stock enregistrée");
@@ -133,7 +123,6 @@ export default function Stock() {
       // SORTIE
       // ===============================
       else {
-
         await addStockOut(formData);
 
         toast.success("Retrait de stock enregistré");
@@ -150,16 +139,10 @@ export default function Stock() {
         quantity: 1,
         note: "",
       });
-
     } catch (error: any) {
-
       console.error(error);
 
-      toast.error(
-        error?.response?.data?.details ||
-        "Erreur lors du mouvement"
-      );
-
+      toast.error(error?.response?.data?.details || "Erreur lors du mouvement");
     } finally {
       setSubmitting(false);
     }
@@ -168,9 +151,7 @@ export default function Stock() {
   // ===============================
   // VISIBLE MOVEMENTS
   // ===============================
-  const visibleMovements = showAllMovements
-    ? movements
-    : movements.slice(0, 6);
+  const visibleMovements = showAllMovements ? movements : movements.slice(0, 6);
 
   // ===============================
   // LOADING
@@ -188,14 +169,11 @@ export default function Stock() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 lg:p-8">
-
       <div className="max-w-[1450px] mx-auto space-y-8">
-
         {/* ===================================== */}
         {/* HEADER */}
         {/* ===================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
           <div className="lg:col-span-2">
             <h1 className="text-3xl font-black text-slate-900">
               Gestion du Stock
@@ -208,7 +186,6 @@ export default function Stock() {
 
           {/* Stock critique */}
           <div className="bg-orange-50 border border-orange-100 rounded-3xl p-5 flex items-center gap-4">
-
             <div className="bg-orange-500 p-3 rounded-2xl text-white">
               <AlertTriangle size={22} />
             </div>
@@ -226,7 +203,6 @@ export default function Stock() {
 
           {/* Ruptures */}
           <div className="bg-rose-50 border border-rose-100 rounded-3xl p-5 flex items-center gap-4">
-
             <div className="bg-rose-500 p-3 rounded-2xl text-white">
               <Package size={22} />
             </div>
@@ -247,21 +223,17 @@ export default function Stock() {
         {/* CONTENT */}
         {/* ===================================== */}
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
-
           {/* ===================================== */}
           {/* FORM */}
           {/* ===================================== */}
           <div className="xl:col-span-2">
-
             <div className="bg-white rounded-[30px] p-8 border border-slate-100 shadow-sm sticky top-6">
-
               <h2 className="text-xl font-black text-slate-900 mb-6">
                 Nouveau mouvement
               </h2>
 
               {/* TOGGLE */}
               <div className="flex bg-slate-100 p-1 rounded-2xl mb-8">
-
                 <button
                   type="button"
                   onClick={() => setMovementType("ENTRY")}
@@ -291,10 +263,8 @@ export default function Stock() {
 
               {/* FORM */}
               <form onSubmit={handleSubmit} className="space-y-5">
-
                 {/* PRODUIT */}
                 <div className="space-y-2">
-
                   <label className="text-sm font-bold text-slate-700 ml-1">
                     Produit
                   </label>
@@ -309,15 +279,10 @@ export default function Stock() {
                     }
                     className="w-full bg-slate-50 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-slate-900"
                   >
-                    <option value={0}>
-                      Sélectionner un produit...
-                    </option>
+                    <option value={0}>Sélectionner un produit...</option>
 
                     {products.map((product) => (
-                      <option
-                        key={product.id}
-                        value={product.id}
-                      >
+                      <option key={product.id} value={product.id}>
                         {product.name} ({product.quantity} en stock)
                       </option>
                     ))}
@@ -326,7 +291,6 @@ export default function Stock() {
 
                 {/* QUANTITY */}
                 <div className="space-y-2">
-
                   <label className="text-sm font-bold text-slate-700 ml-1">
                     Quantité
                   </label>
@@ -344,8 +308,6 @@ export default function Stock() {
                     className="w-full bg-slate-50 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-slate-900"
                   />
                 </div>
-
-                
 
                 {/* BUTTON */}
                 <button
@@ -378,7 +340,6 @@ export default function Stock() {
           {/* HISTORY */}
           {/* ===================================== */}
           <div className="xl:col-span-3 space-y-6">
-
             <div className="flex items-center gap-2">
               <History className="text-slate-400" />
 
@@ -388,7 +349,6 @@ export default function Stock() {
             </div>
 
             <div className="space-y-4">
-
               {visibleMovements.length === 0 && (
                 <div className="bg-white rounded-3xl border border-slate-100 p-10 text-center text-slate-500 font-medium">
                   Aucun mouvement enregistré
@@ -396,15 +356,12 @@ export default function Stock() {
               )}
 
               {visibleMovements.map((movement) => (
-
                 <div
                   key={movement.id}
                   className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm flex items-center justify-between hover:shadow-md transition-all"
                 >
-
                   {/* LEFT */}
                   <div className="flex items-center gap-4">
-
                     <div
                       className={`p-3 rounded-2xl ${
                         movement.type === "ENTRY"
@@ -425,15 +382,12 @@ export default function Stock() {
                       </h3>
 
                       <p className="text-xs text-slate-400 font-semibold mt-1">
-                        {new Date(movement.createdAt).toLocaleString(
-                          "fr-FR",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )}
+                        {new Date(movement.createdAt).toLocaleString("fr-FR", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
 
                       {movement.note && (
@@ -446,7 +400,6 @@ export default function Stock() {
 
                   {/* RIGHT */}
                   <div className="text-right">
-
                     <h3
                       className={`text-2xl font-black ${
                         movement.type === "ENTRY"
@@ -459,9 +412,7 @@ export default function Stock() {
                     </h3>
 
                     <p className="text-[10px] uppercase tracking-[2px] font-black text-slate-300">
-                      {movement.type === "ENTRY"
-                        ? "Entrée"
-                        : "Retrait"}
+                      {movement.type === "ENTRY" ? "Entrée" : "Retrait"}
                     </p>
                   </div>
                 </div>
@@ -470,9 +421,7 @@ export default function Stock() {
               {/* BUTTON */}
               {movements.length > 6 && (
                 <button
-                  onClick={() =>
-                    setShowAllMovements(!showAllMovements)
-                  }
+                  onClick={() => setShowAllMovements(!showAllMovements)}
                   className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl font-black text-slate-500 hover:bg-slate-100 transition-all"
                 >
                   {showAllMovements

@@ -16,7 +16,7 @@ import {
   getProducts,
   updateProduct,
 } from "../services/product.service";
-
+import { useNavigate } from "react-router-dom";
 type Product = {
   id: number;
   name: string;
@@ -25,6 +25,12 @@ type Product = {
   purchasePrice: number;
   alertThreshold: number;
   description?: string | null;
+};
+
+type Stats = {
+  totalProducts: number;
+  lowStock: number;
+  criticalStock: number;
 };
 
 type ProductPayload = {
@@ -47,6 +53,8 @@ const initialForm: ProductPayload = {
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
 
@@ -69,9 +77,13 @@ export default function Products() {
     try {
       setLoading(true);
 
-      const response = await getProducts(currentPage);
+      const response = await getProducts(currentPage, 10);
 
       setProducts(response?.data || []);
+
+      setStats(response.stats);
+
+      console.log(response.stats);
 
       if (response?.pagination) {
         setPagination(response.pagination);
@@ -94,19 +106,19 @@ export default function Products() {
     return products.filter((product) => product.name.toLowerCase().includes(q));
   }, [products, search]);
 
-  const stats = useMemo(() => {
-    const lowStock = products.filter(
-      (p) => p.quantity > 0 && p.quantity <= p.alertThreshold,
-    ).length;
+  // const stats = useMemo(() => {
+  //   const lowStock = products.filter(
+  //     (p) => p.quantity > 0 && p.quantity <= p.alertThreshold,
+  //   ).length;
 
-    const outOfStock = products.filter((p) => p.quantity <= 0).length;
+  //   const outOfStock = products.filter((p) => p.quantity <= 0).length;
 
-    return {
-      total: products.length,
-      lowStock,
-      outOfStock,
-    };
-  }, [products]);
+  //   return {
+  //     total: products.length,
+  //     lowStock,
+  //     outOfStock,
+  //   };
+  // }, [products]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -251,11 +263,16 @@ export default function Products() {
               Produits
             </p>
 
-            <p className="text-xl font-black text-blue-900">{stats.total}</p>
+            <p className="text-xl font-black text-blue-900">
+              {stats?.totalProducts}
+            </p>
           </div>
         </div>
 
-        <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex items-center gap-4">
+        <button
+          onClick={() => navigate("/stocks/faibles")}
+          className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex items-center gap-4"
+        >
           <div className="bg-orange-500 p-3 rounded-xl text-white">
             <AlertTriangle size={20} />
           </div>
@@ -266,10 +283,29 @@ export default function Products() {
             </p>
 
             <p className="text-xl font-black text-orange-900">
-              {stats.lowStock}
+              {stats?.lowStock}
             </p>
           </div>
-        </div>
+        </button>
+
+        <button
+          onClick={() => navigate("/stocks/critiques")}
+          className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-4 hover:scale-[1.02] transition-all text-left"
+        >
+          <div className="bg-rose-500 p-3 rounded-xl text-white">
+            <AlertTriangle size={20} />
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-rose-600 uppercase"> 
+              En RUPTRES
+            </p>
+
+            <p className="text-xl font-black text-rose-900">
+              {stats?.criticalStock}
+            </p>
+          </div>
+        </button>
       </div>
 
       {/* SEARCH + BUTTON */}

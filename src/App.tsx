@@ -11,11 +11,11 @@ import Stock from "./pages/Stock";
 import Sales from "./pages/Sales";
 import Clients from "./pages/Clients";
 import Suppliers from "./pages/Suppliers";
-import CashDesk from "./pages/CashDesk";
 import FacturePage from "./pages/factures";
 import FactureDetailPage from "./pages/FactureDetail";
 import ClientsListPage from "./pages/ClientsList";
-
+import SalesHistory from "./pages/SalesHistory";
+import StockAlerts from "./pages/StockAlerts";
 export default function App() {
   return (
     <BrowserRouter>
@@ -45,12 +45,17 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients-list" element={<ClientsListPage />} />
-          <Route path="/stock" element={<Stock />} />
+          {/* <Route path="/stock" element={<Stock />} /> */}
           <Route path="/sales" element={<Sales />} />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/cash" element={<CashDesk />} />
+          {/* <Route path="/suppliers" element={<Suppliers />} /> */}
+          <Route path="/cash" element={<SalesHistory />} />
           <Route path="/factures" element={<FacturePage />} />
           <Route path="/factures/:id" element={<FactureDetailPage />} />
+          <Route path="/stocks/faibles" element={<StockAlerts type="low" />} />
+          <Route
+            path="/stocks/critiques"
+            element={<StockAlerts type="critical" />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

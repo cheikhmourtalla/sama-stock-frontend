@@ -9,6 +9,14 @@ export type CreateProductPayload = {
   salePrice: number;
   alertThreshold: number;
 };
+export type UpdateProductPayload = {
+  name?: string;
+  description?: string;
+  quantity?: number;
+  purchasePrice?: number;
+  salePrice?: number;
+  alertThreshold?: number;
+};
 
 export type ProductQueryParams = {
   search?: string;
@@ -30,8 +38,15 @@ export type ProductListResponse = {
   };
 };
 
-export const getProducts = async (page  : number, limit : number) => {
+export const getProducts = async (page: number, limit: number) => {
   const response = await api.get(`/products?page=${page}&limit=${limit}`);
+
+  return response.data;
+};
+
+//  used fo
+export const allProducts = async () => {
+  const response = await api.get(`/products/all/products`);
 
   return response.data;
 };
@@ -45,9 +60,15 @@ export const createProduct = async (
 
 export const updateProduct = async (
   id: number,
-  payload: CreateProductPayload,
+  payload: UpdateProductPayload,
 ): Promise<Product> => {
-  const response = await api.put(`/products/${id}`, payload);
+  const isObject =
+    typeof payload === "object" && payload !== null && !Array.isArray(payload);
+
+  const updatePayload = isObject ? payload : { quantity: payload };
+
+  console.log(updatePayload);
+  const response = await api.patch(`/products/${id}`, updatePayload);
   return response.data.product;
 };
 
