@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { AlertTriangle, Package } from "lucide-react";
+import { Package } from "lucide-react";
 
 import {
-  getProducts,
+  //   getProducts,
   updateProduct,
   allProducts,
   type UpdateProductPayload,
@@ -27,14 +27,14 @@ export default function StockAlerts({ type }: Props) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [page, setPage] = useState(1);
+  //   const [page, setPage] = useState(1);
 
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
+  //   const [pagination, setPagination] = useState({
+  //     total: 0,
+  //     page: 1,
+  //     limit: 10,
+  //     totalPages: 1,
+  //   });
 
   const fetchProducts = async () => {
     try {
@@ -55,9 +55,9 @@ export default function StockAlerts({ type }: Props) {
 
       setProducts(filtered);
 
-      if (response?.pagination) {
-        setPagination(response.pagination);
-      }
+      //   if (response?.pagination) {
+      //     setPagination(response.pagination);
+      //   }
     } catch (error) {
       console.error(error);
 

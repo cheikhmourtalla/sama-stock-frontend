@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { getDashboardStats } from "../services/dashboard.service";
 import { getSales } from "../services/sale.service";
-import { getProducts } from "../services/product.service";
+import { allProducts } from "../services/product.service";
 
 // Composant de Carte Statistique Ultra-Design
 const StatCard = ({ title, value, icon }: any) => (
@@ -51,7 +51,7 @@ export default function Dashboard() {
         const [statsData, salesData, productsData] = await Promise.all([
           getDashboardStats(),
           getSales(),
-          getProducts(),
+          allProducts(),
         ]);
         setStats(statsData);
         setRecentSales(Array.isArray(salesData) ? salesData.slice(0, 5) : []);

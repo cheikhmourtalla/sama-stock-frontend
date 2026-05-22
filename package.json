@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env VITE_API_URL=http://localhost:3000 vite",
-    "build": "cross-env VITE_API_URL=https://sama-stock.onrender.com tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

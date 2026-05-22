@@ -11,8 +11,8 @@ import {
   Phone,
   Eye,
 } from "lucide-react";
-import { List } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+// import { List } from "lucide-react";
+// import { useNavigate } from "react-router-dom";
 import {
   createClient,
   deleteClient,
@@ -23,29 +23,29 @@ import {
 } from "../services/client.service";
 
 import type { Client } from "../types/client";
-import { isAdmin } from "../utils/auth";
+// import { isAdmin } from "../utils/auth";
 
-type ClientSale = {
-  id: number;
-  quantity: number;
-  unitPrice: number;
-  totalAmount: number;
-  paidAmount: number;
-  remaining: number;
-  note?: string | null;
-  createdAt: string;
-  product?: {
-    id: number;
-    name: string;
-  };
-};
+// type ClientSale = {
+//   id: number;
+//   quantity: number;
+//   unitPrice: number;
+//   totalAmount: number;
+//   paidAmount: number;
+//   remaining: number;
+//   note?: string | null;
+//   createdAt: string;
+//   product?: {
+//     id: number;
+//     name: string;
+//   };
+// };
 const initialForm: ClientPayload = {
   name: "",
   phone: "",
 };
 
 export default function Clients() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
